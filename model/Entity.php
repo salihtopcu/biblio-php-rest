@@ -6,10 +6,10 @@
  * Time: 18:56
  */
 
-namespace BiblioRest\entity;
+namespace BiblioRest\model;
 
 interface iEntity {
-    public static function constructFromData(array $data);
+    public static function constructWithData(array $data);
     public function dto();
 }
 
@@ -21,7 +21,7 @@ class Entity implements iEntity
      *
      * Önce gelen data'nın içeriği data, daha sonra Object'in yapısı dikkate alınarak parse işlemi yapılır.
      */
-    public static function constructFromData(array $data)
+    public static function constructWithData(array $data)
     {
         $class = get_called_class();
         $instance = new $class();
@@ -40,8 +40,8 @@ class Entity implements iEntity
             } else {
                 $subClass = ucfirst($property);
                 if (ArrayMethod::isAssociative($newValue)) {
-                    if (class_exists($subClass) && method_exists($subClass, "constructFromData"))
-                        $instance->$property = $subClass::constructFromData($newValue);
+                    if (class_exists($subClass) && method_exists($subClass, "constructWithData"))
+                        $instance->$property = $subClass::constructWithData($newValue);
                     else
                         echo "SubClass not found </br>";
                 } else {
@@ -51,9 +51,9 @@ class Entity implements iEntity
                             if (!class_exists($subClass))
                                 $subClass = $class . $subClass;
                         }
-                        if (class_exists($subClass) && method_exists($subClass, "constructFromData")) {
+                        if (class_exists($subClass) && method_exists($subClass, "constructWithData")) {
                             foreach ($newValue as $item)
-                                $instance->$property->append($subClass::constructFromData($item));
+                                $instance->$property->append($subClass::constructWithData($item));
                         } else
                             $instance->$property = $newValue;
                     } else
@@ -90,4 +90,31 @@ class Entity implements iEntity
         }
         return $result;
     }
+}
+
+class Collection
+{
+    public static function constructWithData(array $data, $className)
+    {
+
+    }
+
+    public function dto()
+    {
+        $result = array();
+        foreach ($this as $item)
+            if (is_subclass_of($item, "Entity")) {
+                if (method_exists($item, 'listingDto'))
+                    array_push($result, $item->listingDto());
+                else
+                    array_push($result, $item->dto());
+            } else
+                array_push($result, array('info' => 'Not extends Object class.'));
+        return $result;
+    }
+}
+
+class RestError {
+    public $code;
+    public $message;
 }

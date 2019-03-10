@@ -8,6 +8,9 @@
 
 namespace BiblioRest\data;
 
+use BiblioRest\model\Collection;
+use BiblioRest\model\Entity;
+
 abstract class MysqliDatabaseEnvoy
 {
     private $dbLocation;
@@ -15,6 +18,7 @@ abstract class MysqliDatabaseEnvoy
     private $dbName;
     private $dbUser;
     private $dbPassword;
+    /** @var \mysqli */
     private $dbConnection;
 
     public function __construct($dbLocation, $dbName, $dbUser, $dbPassword, $dbPort = null)
@@ -49,7 +53,7 @@ abstract class MysqliDatabaseEnvoy
 
     private function getDbConnection()
     {
-        if (is_null($this->dbConnection)) {
+        if (is_null($this->dbConnection) || $this->dbConnection->get_connection_stats() ) {
             $this->dbConnection = self::createMySqliConnection($this->dbLocation, $this->dbUser, $this->dbPassword, $this->dbName);
             if (is_null($this->dbConnection)) {
                 echo "DB CONNECTION ERROR" . $this->dbConnection->connect_error;
@@ -66,7 +70,40 @@ abstract class MysqliDatabaseEnvoy
         return mysqli_query($this->getDbConnection(), $sql) === true;
     }
 
-    public function startTransaction()
+    /**
+     * @param string $sql
+     * @param class  $modelClass
+     *
+     * @return Collection|null
+     */
+    private function getCollection($sql, $modelClass)
+    {
+        $dbResult = mysqli_query($this->getDbConnection(), $sql);
+        $collection = null;
+        if (is_object($dbResult))
+            $collection = new Collection();
+        while ($row = mysqli_fetch_array($dbResult, MYSQLI_ASSOC))
+            $collection->append($modelClass::constructWithData());
+        return $collection;
+    }
+
+    /**
+     * @param string $sql
+     * @param class  $modelClass
+     *
+     * @return Entity|null
+     */
+    private function getEntity($sql, $modelClass)
+    {
+        $dbResult = mysqli_query($this->getDbConnection(), $sql);
+        $myResult = null;
+        if (is_object($dbResult) && $row = mysqli_fetch_array($dbResult, MYSQLI_ASSOC))
+            return $modelClass::constructWithData();
+        else
+            return null;
+    }
+
+    public function beginTransaction()
     {
         $this->getDbConnection()->autocommit(false);
     }

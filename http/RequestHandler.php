@@ -8,7 +8,8 @@
 
 namespace BiblioRest\http;
 
-require_once 'Request.php';
+require_once 'util/Methods.php';
+require_once 'ApiModule.php';
 
 abstract class RequestHandler
 {
@@ -41,8 +42,8 @@ abstract class RequestHandler
         $commandArray = explode('/', strtolower(trim($_REQUEST ['rquest'])));
         if (count($commandArray) > 0) {
             if (count($commandArray) > 1) {
-                $apiClassName = ucfirst($commandArray [0]);
-                $phpFileName = $apiClassName . ".php";
+                $moduleName = ucfirst($commandArray [0]);
+                $phpFileName = $moduleName . ".php";
                 $func = $commandArray [1];
                 $param = null;
                 if (count($commandArray) > 2)
@@ -51,12 +52,15 @@ abstract class RequestHandler
                 $filePath = $this->apiFolderPath . $phpFileName;
                 if (file_exists($filePath)) {
                     require_once("$filePath");
-                    $api = new $apiClassName ();
-                    if (method_exists($api, $func)) {
+                    $module = new $moduleName ();
+                echo $moduleName;
+//                    echo is_subclass_of($module, ApiModule::class) ? ApiModule::class : $moduleName;
+//                    exit;
+                    if (is_subclass_of($module, ApiModule::class) && method_exists($module, $func)) {
                         if (is_null($param))
-                            $api->$func ();
+                            $module->$func ();
                         else
-                            $api->$func ($param);
+                            $module->$func ($param);
                     } else
                         $success = false;
                 } else

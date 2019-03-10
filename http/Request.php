@@ -8,6 +8,8 @@
 
 namespace BiblioRest\http;
 
+require_once 'Network.php';
+
 abstract class Request
 {
     private static $headers = null;
@@ -25,20 +27,24 @@ abstract class Request
     public static function getHeaders()
     {
         if (is_null(Request::$headers)) {
-            Request::$headers = array();
-            $rx_http = '/\AHTTP_/';
-            foreach ($_SERVER as $key => $val) {
-                if (preg_match($rx_http, $key)) {
-                    $arh_key = preg_replace($rx_http, '', $key);
-                    $rx_matches = explode('_', $arh_key);
-                    if (count($rx_matches) > 0 and strlen($arh_key) > 2) {
-                        foreach ($rx_matches as $ak_key => $ak_val)
-                            $rx_matches [$ak_key] = ucfirst($ak_val);
-                        $arh_key = implode('-', $rx_matches);
+//            if (apache_get_version() !== false) {
+//
+//            } else {
+                Request::$headers = array();
+                $rx_http = '/\AHTTP_/';
+                foreach ($_SERVER as $key => $val) {
+                    if (preg_match($rx_http, $key)) {
+                        $arh_key = preg_replace($rx_http, '', $key);
+                        $rx_matches = explode('_', $arh_key);
+                        if (count($rx_matches) > 0 and strlen($arh_key) > 2) {
+                            foreach ($rx_matches as $ak_key => $ak_val)
+                                $rx_matches [$ak_key] = ucfirst($ak_val);
+                            $arh_key = implode('-', $rx_matches);
+                        }
+                        Request::$headers [strtolower($arh_key)] = $val;
                     }
-                    Request::$headers [$arh_key] = $val;
                 }
-            }
+//            }
         }
         return (Request::$headers);
     }
@@ -110,27 +116,8 @@ abstract class Request
         return self::getHeader("ACCEPT-LANGUAGE");
     }
 
-    public static function getAccessToken()
+    public static function getAuthorization()
     {
-        return self::getHeader("ACCESS-TOKEN");
+        return self::getHeader("AUTHORIZATION");
     }
-
-}
-
-abstract class RequestMethod
-{
-    const Get = "GET";
-    const Post = "POST";
-    const Put = "PUT";
-    const Delete = "DELETE";
-    const Options = "OPTIONS";
-}
-
-abstract class ContentType
-{
-    const Json = "application/json";
-    const Xml = "application/xml";
-    const PlainText = "text/plain";
-    const Html = "text/html";
-    const FormUrlEncoded = "application/x-www-form-urlencoded";
 }
