@@ -15,6 +15,8 @@ interface iEntity {
 
 class Entity implements iEntity
 {
+    public static $dateTimeFormat = DATE_ISO8601;
+
     /**
      * @param array $data
      * @return mixed
@@ -26,7 +28,7 @@ class Entity implements iEntity
         $class = get_called_class();
         $instance = new $class();
         foreach ($instance as $property => $value) {
-            $newValue = ArrayMethod::getValue($data, $property);
+            $newValue = \ArrayMethod::getValue($data, $property);
 
             if (!is_array($newValue)) {
                 if (is_double($value))
@@ -35,15 +37,19 @@ class Entity implements iEntity
                     $instance->$property = (int)$newValue;
                 else if (is_bool($value))
                     $instance->$property = (bool)$newValue;
-                else
-                    $instance->$property = ArrayMethod::getValue($data, $property);
+                else {
+                    $instance->$property = \DateMethods::create($newValue);
+                    if (is_null($instance->$property))
+                        $instance->$property = $newValue;
+                }
             } else {
                 $subClass = ucfirst($property);
-                if (ArrayMethod::isAssociative($newValue)) {
+                if (\ArrayMethod::isAssociative($newValue)) {
                     if (class_exists($subClass) && method_exists($subClass, "constructWithData"))
                         $instance->$property = $subClass::constructWithData($newValue);
-                    else
-                        echo "SubClass not found </br>";
+                    else {
+                        $instance->$property = json_decode(json_encode($newValue));
+                    }
                 } else {
                     if (is_object($value) && get_class($value) == "Collection") {
                         if (!class_exists($subClass) && substr($subClass, -1) == "s") {
@@ -68,7 +74,7 @@ class Entity implements iEntity
     {
         $result = array();
         foreach ($this as $key => $value) {
-            if (method_exists($value, 'dto') && !is_string($value)) // String icerigi bi class ismiyla çakıştığında hata oluşuyordu
+            if (method_exists($value, 'dto')) // String icerigi bi class ismiyla çakıştığında hata oluşuyordu
                 $result[$key] = $value->dto();
             else if (is_array($value)) {
                 $subResult = array();
@@ -81,12 +87,10 @@ class Entity implements iEntity
                         echo get_class($item) . " has no dto() method!<br/>";
                 }
                 $result[$key] = $subResult;
-            } else {
-                if ($value instanceof DateTime)
-                    $result[$key] = $value->format(DATE_ISO8601);
-                else
-                    $result[$key] = $value;
-            }
+            } else if (is_object($value) && get_class($value) == "DateTime")
+                $result[$key] = date_format($value, Entity::$dateTimeFormat);
+            else
+                $result[$key] = $value;
         }
         return $result;
     }
@@ -117,4 +121,9 @@ class Collection
 class RestError {
     public $code;
     public $message;
+}
+
+class Pagination {
+    public $pagerSize = 0;
+    public $pageNumber = 0;
 }

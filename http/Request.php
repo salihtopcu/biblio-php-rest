@@ -27,9 +27,9 @@ abstract class Request
     public static function getHeaders()
     {
         if (is_null(Request::$headers)) {
-//            if (apache_get_version() !== false) {
-//
-//            } else {
+            if (apache_get_version() !== false)
+                Request::$headers = apache_request_headers();
+            else {
                 Request::$headers = array();
                 $rx_http = '/\AHTTP_/';
                 foreach ($_SERVER as $key => $val) {
@@ -44,9 +44,11 @@ abstract class Request
                         Request::$headers [strtolower($arh_key)] = $val;
                     }
                 }
-//            }
+            }
+            foreach (Request::$headers as $key => $value)
+                Request::$headers[strtolower($key)] = $value;
         }
-        return (Request::$headers);
+        return Request::$headers;
     }
 
     public static function getQueryString($key)
@@ -72,16 +74,12 @@ abstract class Request
 
     public static function getHeader($key)
     {
-        if (!empty (Request::getHeaders()[$key])) {
-            return Request::getHeaders()[$key];
-        } else {
-            return null;
-        }
+        return Request::getHeaders()[strtolower($key)];
     }
 
     public static function getContentType()
     {
-        $typeText = ArrayMethod::getValue($_SERVER, "CONTENT_TYPE", "");
+        $typeText = self::getHeader("content-type");
         if (substr_count($typeText, ContentType::Json))
             return ContentType::Json;
         else if (substr_count($typeText, ContentType::Xml))

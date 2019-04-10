@@ -11,7 +11,7 @@ namespace BiblioRest\data;
 use BiblioRest\model\Collection;
 use BiblioRest\model\Entity;
 
-abstract class MysqliDatabaseEnvoy
+abstract class MysqlDatabaseEnvoy
 {
     private $dbLocation;
     private $dbPort;
@@ -30,7 +30,7 @@ abstract class MysqliDatabaseEnvoy
         $this->dbPort = $dbPort;
     }
 
-    private static function createMySqliConnection($url, $user, $password, $dbName, $port = null)
+    private static function createMySqlConnection($url, $user, $password, $dbName, $port = null)
     {
         $connection = mysqli_init();
         if ($connection->options(MYSQLI_OPT_CONNECT_TIMEOUT, self::$dbConnectionTimeout))
@@ -54,7 +54,7 @@ abstract class MysqliDatabaseEnvoy
     private function getDbConnection()
     {
         if (is_null($this->dbConnection) || $this->dbConnection->get_connection_stats() ) {
-            $this->dbConnection = self::createMySqliConnection($this->dbLocation, $this->dbUser, $this->dbPassword, $this->dbName);
+            $this->dbConnection = self::createMySqlConnection($this->dbLocation, $this->dbUser, $this->dbPassword, $this->dbName);
             if (is_null($this->dbConnection)) {
                 echo "DB CONNECTION ERROR" . $this->dbConnection->connect_error;
                 header("HTTP/1.1 506 Database Connection Error");
