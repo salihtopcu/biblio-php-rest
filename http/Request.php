@@ -6,9 +6,9 @@
  * Time: 23:46
  */
 
-namespace BiblioRest\http;
+namespace Biblio\http;
 
-require_once 'Network.php';
+require_once "Network.php";
 
 abstract class Request
 {
@@ -27,9 +27,9 @@ abstract class Request
     public static function getHeaders()
     {
         if (is_null(Request::$headers)) {
-            if (apache_get_version() !== false)
+            if (apache_get_version() !== false) {
                 Request::$headers = apache_request_headers();
-            else {
+            } else {
                 Request::$headers = array();
                 $rx_http = '/\AHTTP_/';
                 foreach ($_SERVER as $key => $val) {
@@ -51,9 +51,12 @@ abstract class Request
         return Request::$headers;
     }
 
-    public static function getQueryString($key)
-    {
-        return (is_array($_GET) && array_key_exists($key, $_GET)) ? $_GET[$key] : null;
+    public static function getQueryString($key) {
+        return self::hasQueryString($key) ? $_GET[$key] : null;
+    }
+
+    public static function hasQueryString($key) {
+        return is_array($_GET) && array_key_exists($key, $_GET);
     }
 
     public static function getData()
@@ -74,7 +77,7 @@ abstract class Request
 
     public static function getHeader($key)
     {
-        return Request::getHeaders()[strtolower($key)];
+        return \ArrayMethod::getValue(Request::getHeaders(), strtolower($key));
     }
 
     public static function getContentType()
@@ -94,7 +97,7 @@ abstract class Request
 
     public static function getAcceptedContentType()
     {
-        $typeText = ArrayMethod::getValue(self::getHeaders(), "ACCEPT", "");
+        $typeText = \ArrayMethod::getValue(self::getHeaders(), "accept", "");
         if (substr_count($typeText, ContentType::Json))
             return ContentType::Json;
         else if (substr_count($typeText, ContentType::Xml))
@@ -111,11 +114,11 @@ abstract class Request
 
     public static function getAcceptedLanguage()
     {
-        return self::getHeader("ACCEPT-LANGUAGE");
+        return self::getHeader("accept-language");
     }
 
     public static function getAuthorization()
     {
-        return self::getHeader("AUTHORIZATION");
+        return self::getHeader("authorization");
     }
 }

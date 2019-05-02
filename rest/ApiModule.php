@@ -6,7 +6,7 @@
  * Time: 01:21
  */
 
-namespace BiblioRest\http;
+namespace Biblio\rest;
 
 class ApiModule
 {

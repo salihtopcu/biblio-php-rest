@@ -6,9 +6,9 @@
  * Time: 23:27
  */
 
-namespace BiblioRest\http;
+namespace Biblio\http;
 
-use BiblioRest\util\BaseEnum;
+use Biblio\util\BaseEnum;
 
 abstract class Network
 {

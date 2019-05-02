@@ -6,7 +6,7 @@
  * Time: 23:42
  */
 
-namespace BiblioRest\util;
+namespace Biblio\util;
 
 abstract class BaseEnum
 {

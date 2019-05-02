@@ -6,62 +6,73 @@
  * Time: 00:39
  */
 
-namespace BiblioRest\data;
+namespace Biblio\data;
 
-use BiblioRest\model\Collection;
-use BiblioRest\model\Entity;
+use Biblio\model\Collection;
 
-abstract class MysqlDatabaseEnvoy
+require_once "IDatabaseEnvoy.php";
+
+class MysqliDatabaseEnvoy implements IDatabaseEnvoy
 {
-    private $dbLocation;
-    private $dbPort;
-    private $dbName;
-    private $dbUser;
-    private $dbPassword;
-    /** @var \mysqli */
-    private $dbConnection;
+    /**
+     * @var DBConnectionInfo
+     */
+    private $dbConnectionInfo;
 
-    public function __construct($dbLocation, $dbName, $dbUser, $dbPassword, $dbPort = null)
+    /**
+     * @var string
+     */
+    private $charset;
+    
+    /**
+     * @var \mysqli
+     */
+    private static $dbConnection;
+
+    /**
+     * MysqliSqlDatabaseEnvoy constructor.
+     *
+     * @param DBConnectionInfo $dbConnectionInfo
+     * @param string           $charset
+     */
+    public final function __construct(DBConnectionInfo $dbConnectionInfo, $charset = "utf8")
     {
-        $this->dbLocation = $dbLocation;
-        $this->dbName = $dbName;
-        $this->dbUser = $dbUser;
-        $this->dbPassword = $dbPassword;
-        $this->dbPort = $dbPort;
+        $this->dbConnectionInfo = $dbConnectionInfo;
+        $this->charset = $charset;
     }
 
-    private static function createMySqlConnection($url, $user, $password, $dbName, $port = null)
+    public function runSelectSql($sql)
     {
-        $connection = mysqli_init();
-        if ($connection->options(MYSQLI_OPT_CONNECT_TIMEOUT, self::$dbConnectionTimeout))
-            self::buildMySqliConnection($connection, $url, $user, $password, $dbName, $port);
-        else
-            echo $connection->error . "<br/>";
-        return $connection;
+        return mysqli_query($this->getDbConnection(), $sql);
     }
 
-    private static function buildMySqliConnection(mysqli $connection, $url, $user, $password, $dbName, $port = null)
+    public function runInsertSql($sql)
     {
-        if ($connection->real_connect($url, $user, $password, $dbName, $port) && $connection->set_charset("utf8")) {
-            array_push(Session::$activeDbConnections, $connection);
-            return true;
-        } else {
-            echo $connection->error . "<br/>";
-            return false;
-        }
+        return $this->runSql($sql);
     }
 
-    private function getDbConnection()
+    public function runUpdateSql($sql)
     {
-        if (is_null($this->dbConnection) || $this->dbConnection->get_connection_stats() ) {
-            $this->dbConnection = self::createMySqlConnection($this->dbLocation, $this->dbUser, $this->dbPassword, $this->dbName);
-            if (is_null($this->dbConnection)) {
-                echo "DB CONNECTION ERROR" . $this->dbConnection->connect_error;
+        return $this->runSql($sql);
+    }
+
+    public function runDeleteSql($sql)
+    {
+        return $this->runSql($sql);
+    }
+
+    protected function getDbConnection()
+    {
+//        if (is_null(MysqliDatabaseEnvoy::$dbConnection) && \StringMethod::areNotEqual(get_class(MysqliDatabaseEnvoy::$dbConnection), 'mysqli')) {
+        if (is_null(MysqliDatabaseEnvoy::$dbConnection) || !MysqliDatabaseEnvoy::$dbConnection->get_connection_stats()) {
+            MysqliDatabaseEnvoy::$dbConnection = \MysqliMethod::createMySqliConnection($this->dbConnectionInfo->getDbLocation(), $this->dbConnectionInfo->getDbUser(), $this->dbConnectionInfo->getDbPassword(), $this->dbConnectionInfo->getDbName(), $this->dbConnectionInfo->getDbPort(), $this->dbConnectionInfo->getTimeout());
+            if (is_null(MysqliDatabaseEnvoy::$dbConnection)) {
+                echo "DB CONNECTION ERROR" . MysqliDatabaseEnvoy::$dbConnection->connect_error;
                 header("HTTP/1.1 506 Database Connection Error");
                 exit;
             }
         }
-        return $this->dbConnection;
+        return MysqliDatabaseEnvoy::$dbConnection;
     }
 
     // for INSERT, UPDATE and DELETE
@@ -70,35 +81,25 @@ abstract class MysqlDatabaseEnvoy
         return mysqli_query($this->getDbConnection(), $sql) === true;
     }
 
-    /**
-     * @param string $sql
-     * @param class  $modelClass
-     *
-     * @return Collection|null
-     */
-    private function getCollection($sql, $modelClass)
+    public function getCollection($sql, $modelClass)
     {
+//        echo "<br/>$sql<br/>";
         $dbResult = mysqli_query($this->getDbConnection(), $sql);
         $collection = null;
         if (is_object($dbResult))
             $collection = new Collection();
         while ($row = mysqli_fetch_array($dbResult, MYSQLI_ASSOC))
-            $collection->append($modelClass::constructWithData());
+            $collection->append($modelClass::constructFromData($row));
         return $collection;
     }
-
-    /**
-     * @param string $sql
-     * @param class  $modelClass
-     *
-     * @return Entity|null
-     */
-    private function getEntity($sql, $modelClass)
+    
+    public function getEntity($sql, $modelClass)
     {
+//        echo "<br/>$sql<br/>";
         $dbResult = mysqli_query($this->getDbConnection(), $sql);
         $myResult = null;
         if (is_object($dbResult) && $row = mysqli_fetch_array($dbResult, MYSQLI_ASSOC))
-            return $modelClass::constructWithData();
+            return $modelClass::constructFromData($row);
         else
             return null;
     }
@@ -130,11 +131,20 @@ abstract class MysqlDatabaseEnvoy
 
     public function getErrorMessage()
     {
-        return empty($this->getDbConnection()->error) ? null : $this->getDbConnection()->error;
+        return empty($this->hasError()) ? $this->getDbConnection()->error : null;
     }
 
     public function getLastInsertId()
     {
         return mysqli_insert_id($this->getDbConnection());
     }
+
+    public function disconnect()
+    {
+        if (!is_null(self::$dbConnection)) {
+            self::$dbConnection->rollback();
+            self::$dbConnection->close();
+        }
+    }
+
 }

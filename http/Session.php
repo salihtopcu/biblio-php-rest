@@ -6,12 +6,16 @@
  * Time: 01:25
  */
 
-namespace BiblioRest\http;
+namespace Biblio\http;
+
+use Biblio\util\Language;
 
 require_once dirname(__FILE__) . '/../_config.php';
 require_once ROOT_PATH . '/util/Types.php';
 require_once ROOT_PATH . '/util/Methods.php';
-require_once 'Request.php';
+require_once ROOT_PATH . '/http/Request.php';
+require_once ROOT_PATH . '/model/Entity.php';
+require_once ROOT_PATH . '/util/Language.php';
 
 abstract class Session
 {
@@ -24,10 +28,18 @@ abstract class Session
     private $responseBuilder;
     private $languageOptions = [];
 
+    protected $defaultLanguage = Language::english;
+
+    /**
+     * @var Session
+     */
+    protected static $instance;
+
     /**
      * Session constructor.
-     * @param $languagesPath | "some/directory/"
-     * @param RequestHandler $requestHandler
+     *
+     * @param                 $languagesPath | "some/directory/"
+     * @param RequestHandler  $requestHandler
      * @param ResponseBuilder $responseBuilder
      */
     public function __construct($languagesPath, RequestHandler $requestHandler, ResponseBuilder $responseBuilder)
@@ -42,10 +54,15 @@ abstract class Session
 //        echo $biblioPath . '<br/>';
     }
 
-    final public function build()
+    public function build()
     {
-        self::setLanguage($this->languagesPath);
+        $this->setLanguage($this->languagesPath);
         $this->requestHandler->run();
+    }
+
+    public function sendResponse($data, $code, array $dbEnvoys = [])
+    {
+        $this->responseBuilder->run($data, $code, $dbEnvoys);
     }
 
     private function setLanguage()
@@ -67,15 +84,20 @@ abstract class Session
                     }
             }
             if (empty($this->currentLanguage))
-                $this->currentLanguage = 'en';
-            include_once 'language/' . $this->currentLanguage . '.php';
+                $this->currentLanguage = Language::english;
+            include_once $this->languagesPath . '/' . $this->currentLanguage . '.php';
             if (isset($word))
                 $this->word = $word;
         }
     }
 
+//    public static function getInstance()
+//    {
+//        return self::$instance;
+//    }
+
     public static function getWord($key)
     {
-        return isset(self::$word[$key]) ? self::$word[$key] : $key;
+        return !is_null(self::$instance) && isset(self::$instance->word[$key]) ? self::$instance->word[$key] : $key;
     }
 }

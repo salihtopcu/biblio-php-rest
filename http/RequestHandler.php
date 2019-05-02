@@ -6,10 +6,9 @@
  * Time: 23:44
  */
 
-namespace BiblioRest\http;
+namespace Biblio\http;
 
 require_once 'util/Methods.php';
-require_once 'ApiModule.php';
 
 abstract class RequestHandler
 {
@@ -20,7 +19,8 @@ abstract class RequestHandler
         $this->apiFolderPath = $apiFolderPath;
     }
 
-    public function run() {
+    public function run()
+    {
         // Request formatlari
 // {dosya_adı}/{fonksiyon_adı}
 // {dosya_adı}/{fonksiyon_adı}/{id}
@@ -53,10 +53,9 @@ abstract class RequestHandler
                 if (file_exists($filePath)) {
                     require_once("$filePath");
                     $module = new $moduleName ();
-                echo $moduleName;
-//                    echo is_subclass_of($module, ApiModule::class) ? ApiModule::class : $moduleName;
-//                    exit;
-                    if (is_subclass_of($module, ApiModule::class) && method_exists($module, $func)) {
+//                    echo 'ModuleName: ' . $moduleName;
+//                    if (is_subclass_of($module, ApiModule::class) && method_exists($module, $func)) {
+                    if (method_exists($module, $func)) {
                         if (is_null($param))
                             $module->$func ();
                         else
