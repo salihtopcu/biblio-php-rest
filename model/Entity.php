@@ -84,10 +84,12 @@ abstract class Entity implements iEntity
             $result = array();
             foreach ($this as $key => $value) {
 //                echo "<br/>KEY: $key";
-                if (is_null($value)) {
+                if (is_null($value) && (is_null($maxChildCount) || $maxChildCount > 0)) {
                     $getterMethod = 'get' . ucfirst($key);
-                    if (method_exists($this, $getterMethod))
+                    if (method_exists($this, $getterMethod)) {
+//                        echo "<br/>$getterMethod<br/>";
                         $value = $this->$getterMethod();
+                    }
                 }
                 if (is_object($value)) {
                     if (is_subclass_of($value, Entity::class) && method_exists($value, 'dto')) {

@@ -16,9 +16,9 @@ class DBEntity extends Entity
     public function dto($maxChildCount = null)
     {
         $result = parent::dto($maxChildCount);
-        if (is_array($result))
-            return array_merge(["id" => $this->id], $result);
-        else
+        if (is_array($result)) {
+            return empty($this->id) ? $result : array_merge(["id" => $this->id], $result);
+        } else
             return null;
     }
 

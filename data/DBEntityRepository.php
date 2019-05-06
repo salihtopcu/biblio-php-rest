@@ -56,7 +56,10 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
         return $this->dbEnvoy->getCollection($sql, $this->getEntityClassName());
     }
 
-    protected function generateSelectPhrase()
+    /**
+     * @return string
+     */
+    protected final function generateSelectPhrase()
     {
         $selectPhrase = "SELECT ";
         $columnNames = "";
@@ -73,25 +76,61 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
     }
 
     /**
-     * @param int $id
+     * @param array $conditions
      *
-     * @return DBEntity
+     * @return string
      */
-    public function find($id)
+    protected final function generateWherePhrase(array $conditions)
     {
-        if ($this->hasIdColumn) {
-            $sql = $this->generateSelectPhrase() . " WHERE id = $id";
-            return $this->getEntity($sql);
-        } else
-            return null;
+        $phrase = "";
+        if (count($conditions) > 0 && \ArrayMethod::isAssociative($conditions)) {
+            $revertedMap = $this->revertColumnNameMap();
+            foreach ($conditions as $property => $value) {
+                if (!is_null($value)) {
+                    $isDate = is_object($value) && get_class($value) == "DateTime";
+                    $isLike = is_string($value) && !empty($value) && (substr($value, 0, 1) == '%' || substr($value, -1) == '%');
+                    $phrase .= \StringMethod::contains($phrase, "WHERE") ? "AND " : "WHERE ";
+                    $phrase .= $revertedMap[$property];
+                    $phrase .= $isLike ? " LIKE " : " = ";
+                    $phrase .= is_string($value) || $isDate ? "'" : "";
+                    if ($this->convertBoolToInt && is_bool($value))
+                        $phrase .= (int) $value;
+                    else
+                        $phrase .= $value;
+                    $phrase .= is_string($value) || $isDate ? "' " : " ";
+                }
+            }
+        }
+        return $phrase;
+    }
+
+    /**
+     * @param array $properties
+     *
+     * @return string
+     */
+    protected final function generateOrderPhrase(array $properties)
+    {
+        $phrase = "";
+        if (count($properties) > 0) {
+            $revertedMap = $this->revertColumnNameMap();
+            foreach ($properties as $property) {
+                if (!is_null($property) && $property != "") {
+                    $phrase .= \StringMethod::contains($sql, "ORDER BY") ?
+                        ", " : " ORDER BY ";
+                    $phrase .= $revertedMap[$property] . " ";
+                }
+            }
+        }
+        return $phrase;
     }
 
     /**
      * @param DBEntity $instance
      *
-     * @return bool
+     * @return bool|string
      */
-    public function insert(DBEntity $instance)
+    protected function generateInsertPhrase(DBEntity $instance)
     {
         if ($this->getEntityClassName() == get_class($instance)) {
             $sqlColumns = "";
@@ -119,14 +158,19 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
                 }
             }
             $sql = "INSERT INTO " . $this->getTableName() . " ($sqlColumns) VALUES ($sqlValues)";
-            return $this->dbEnvoy->runInsertSql($sql);
+            return $sql;
         } else {
             echo "instance must be " . $this->getEntityClassName();
             return false;
         }
     }
 
-    public function update(DBEntity $instance)
+    /**
+     * @param DBEntity $instance
+     *
+     * @return bool|string
+     */
+    public function generateUpdatePhrase(DBEntity $instance)
     {
         if ($this->hasIdColumn && $this->getEntityClassName() == get_class($instance)) {
             $setPhrase = "";
@@ -148,54 +192,125 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
                             $setPhrase .= $value;
                         $setPhrase .= is_string($value) || $isDate ? "'" : "";
                     }
-
                 }
             }
             $sql = "UPDATE " . $this->getTableName() . " SET $setPhrase WHERE id = $instance->id";
-            return $this->dbEnvoy->runUpdateSql($sql);
+            return $sql;
         } else {
             echo "instance must be " . $this->getEntityClassName() . " and must have id";
             return false;
         }
     }
 
-    public function delete(DBEntity $instance)
+    /**
+     * @param DBEntity $instance
+     *
+     * @return bool
+     */
+    protected function generateDeletePhrase(array $conditions)
     {
-        if ($this->hasIdColumn && $this->getEntityClassName() == get_class($instance)) {
-            $sql = "DELETE FROM " . $this->getTableName() . " WHERE id = $instance->id";
-            return $this->dbEnvoy->runDeleteSql($sql);
-        } else {
-            echo "instance must be " . $this->getEntityClassName() . " and must have id";
-            return false;
-        }
+        $sql = "DELETE FROM " . $this->getTableName() . " " . $this->generateWherePhrase($conditions);
+        return $sql;
     }
 
+    /**
+     * @param int $id
+     *
+     * @return DBEntity
+     */
+    public function find($id)
+    {
+        if ($this->hasIdColumn) {
+            $sql = $this->generateSelectPhrase() . " WHERE id = $id";
+            return $this->getEntity($sql);
+        } else
+            return null;
+    }
+
+    /**
+     * @param array|null $conditions
+     * @param array|null $orderBy
+     *
+     * @return \Collection
+     */
     public function filter(array $conditions = null, array $orderBy = null)
     {
-        $sql = $this->generateSelectPhrase();
-        if (!is_null($conditions) && count($conditions) > 0 && \ArrayMethod::isAssociative($conditions)) {
-            foreach ($conditions as $property => $value) {
-                if (!is_null($value)) {
-                    $isDate = is_object($value) && get_class($value) == "DateTime";
-                    $sql .= \StringMethod::contains($sql, "WHERE") ? " AND " : " WHERE ";
-                    $sql .= $this->revertColumnNameMap()[$property] . " = ";
-                    $sql .= is_string($value) || $isDate ? "'" : "";
-                    if ($this->convertBoolToInt && is_bool($value))
-                        $sql .= (int) $value;
-                    else
-                        $sql .= $value;
-                    $sql .= is_string($value) || $isDate ? "'" : "";
-                }
+        $wherePhrase = "";
+        if (!is_null($conditions)) {
+            if (\ArrayMethod::isAssociative($conditions))
+                $wherePhrase = $this->generateWherePhrase($conditions);
+            else {
+                echo "conditions array must be associative";
+                return null;
             }
         }
-        if (!is_null($orderBy) && count($orderBy) > 0) {
-            foreach ($orderBy as $property) {
-                $sql .= \StringMethod::contains($sql, "ORDER BY") ? " , " : " ORDER BY ";
-                $sql .= $this->revertColumnNameMap()[$property];
-            }
+        $orderPhrase = "";
+        if (!is_null($orderBy)) {
+            $orderPhrase = $this->generateOrderPhrase($orderBy);
         }
+        $sql = $this->generateSelectPhrase() . " $wherePhrase $orderPhrase";
 //        echo $sql . '<br/>';
         return $this->getCollection($sql);
+    }
+
+    /**
+     * @param DBEntity $instance
+     *
+     * @return bool
+     */
+    public function insert(DBEntity $instance)
+    {
+        $sql = $this->generateInsertPhrase();
+        if (is_string($sql))
+            return $this->dbEnvoy->runInsertSql($sql);
+        else
+            return false;
+    }
+
+    /**
+     * @param DBEntity $instance
+     *
+     * @return bool
+     */
+    public function update(DBEntity $instance)
+    {
+        if ($instance->id > 0 && $this->getEntityClassName() == get_class($instance)) {
+            $sql = $this->generateUpdatePhrase($instance);
+            if (is_string($sql))
+                return $this->dbEnvoy->runUpdateSql($sql);
+            else
+                return false;
+        } else {
+            echo "instance must be " . $this->getEntityClassName() . " and must have id";
+            return false;
+        }
+
+    }
+
+    public function deleteWithConditions(array $conditions)
+    {
+        $sql = $this->generateDeletePhrase($conditions);
+        if (\StringMethod::contains($sql, "WHERE")) {
+            return $this->dbEnvoy->runDeleteSql($sql);
+        } else {
+            echo "conditions array must be associative and must contain at least one valid condition";
+            return false;
+        }
+    }
+
+    /**
+     * @param DBEntity $instance
+     *
+     * @return bool
+     */
+    public function delete(DBEntity $instance)
+    {
+        if ($instance->id > 0 && $this->getEntityClassName() == get_class($instance)) {
+            return $this->deleteWithConditions(["id" => $instance->id]);
+        } else {
+            echo "instance must be " . $this->getEntityClassName() . " and must have id";
+            return false;
+        }
     }
 
     // TODO:
