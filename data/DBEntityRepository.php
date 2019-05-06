@@ -290,6 +290,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
     public function deleteWithConditions(array $conditions)
     {
         $sql = $this->generateDeletePhrase($conditions);
+//        echo $sql . '<br/>';
         if (\StringMethod::contains($sql, "WHERE")) {
             return $this->dbEnvoy->runDeleteSql($sql);
         } else {
