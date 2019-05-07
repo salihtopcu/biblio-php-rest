@@ -260,7 +260,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
      */
     public function insert(DBEntity $instance)
     {
-        $sql = $this->generateInsertPhrase();
+        $sql = $this->generateInsertPhrase($instance);
         if (is_string($sql))
             return $this->dbEnvoy->runInsertSql($sql);
         else

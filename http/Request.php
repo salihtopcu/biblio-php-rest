@@ -16,12 +16,22 @@ abstract class Request
 
     public static function getMethod()
     {
-        return $_SERVER ["REQUEST_METHOD"];
+        return $_SERVER["REQUEST_METHOD"];
     }
 
-    public static function getValue()
+    public static function getHost()
     {
-        return $_SERVER ['REQUEST_URI'];
+        return $_SERVER['HTTP_HOST'];
+    }
+
+    public static function getUrl()
+    {
+        return $_SERVER['REQUEST_URI'];
+    }
+
+    public static function getPath()
+    {
+        return $_REQUEST['rquest'];
     }
 
     public static function getHeaders()
@@ -51,11 +61,13 @@ abstract class Request
         return Request::$headers;
     }
 
-    public static function getQueryString($key) {
+    public static function getQueryString($key)
+    {
         return self::hasQueryString($key) ? $_GET[$key] : null;
     }
 
-    public static function hasQueryString($key) {
+    public static function hasQueryString($key)
+    {
         return is_array($_GET) && array_key_exists($key, $_GET);
     }
 

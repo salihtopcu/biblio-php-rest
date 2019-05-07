@@ -8,14 +8,32 @@
 
 namespace Biblio\http;
 
-class ResponseBuilder {
+interface IResponseBuilderListener
+{
+    function onBeforeResponseSend();
+}
+
+class ResponseBuilder
+{
+
+    private $listener;
+
+    public function __construct(IResponseBuilderListener $listener = null)
+    {
+        $this->listener = $listener;
+    }
+
+    public function setListener(IResponseBuilderListener $listener)
+    {
+        $this->listener = $listener;
+    }
 
     /**
      * @param       $data
      * @param       $code       NetworkStatusCode
-     * @param array $dbEnvoys   array of iDatabaseEnvoy
      */
-    public function run($data, $code, array $dbEnvoys = []) {
+    public function run($data, $code)
+    {
         // TODO: Will be edit for different content types
         if (!is_null($data)) {
             if (is_array($data) == "Collection" && method_exists($data, "listingDto"))
@@ -25,16 +43,16 @@ class ResponseBuilder {
             if (is_array($data)) {
                 // TODO: add xml parsing
 //                if (Request::getAcceptedContentType() == ContentType::Xml) {
-/*                    $xml = new SimpleXMLElement('<?xml version="1.0"?><data></data>');*/
+                /*                    $xml = new SimpleXMLElement('<?xml version="1.0"?><data></data>');*/
 //                    parent::array_to_xml($data, $xml);
 //                    $data = $xml->asXML();
 //                } else
                 $data = json_encode($data);
             }
-            foreach ($dbEnvoys as $dbEnvoy) {
-                if (!is_null($dbEnvoy))
-                    $dbEnvoy->disconnect();
-            }
+
+            if (!is_null($this->listener))
+                $this->listener->onBeforeResponseSend();
+
             header("HTTP/1.1 " . $code . " " . Network::getStatusMessage($code));
             header("Content-Type:" . Request::getAcceptedContentType());
             echo $data;

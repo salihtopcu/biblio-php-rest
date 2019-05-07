@@ -60,7 +60,12 @@ abstract class Entity implements iEntity
                 } else {
                     if (is_object($value) && get_class($value) == "Collection") {
                         if (!class_exists($subClass) && substr($subClass, -1) == "s") {
-                            $subClass = substr($subClass, 0, -1);
+                            if (substr($subClass, -3) == "ies")
+                                $subClass = substr($subClass, 0, -3) . "y";
+                            else if (substr($subClass, -2) == "es")
+                                $subClass = substr($subClass, 0, -2);
+                            else if (substr($subClass, -1) == "s")
+                                $subClass = substr($subClass, 0, -1);
                             if (!class_exists($subClass))
                                 $subClass = $class . $subClass;
                         }
@@ -97,7 +102,7 @@ abstract class Entity implements iEntity
                         $result[$key] = is_null($maxChildCount) ? $value->dto(null) : $value->dto($maxChildCount - 1);
                     } else if (get_class($value) == Collection::class || is_subclass_of($value, Collection::class)) {
 //                        echo '<br/>to collection dto()';
-                        $result[$key] = is_null($maxChildCount) ? $value->dto(null) : $value->dto($maxChildCount);
+                        $result[$key] = is_null($maxChildCount) ? $value->dto(null) : $value->dto($maxChildCount - 1);
                     } else if (get_class($value) == "DateTime") {
                         $result[$key] = \DateMethod::format($value, Entity::$dateTimeFormat);
 //                        echo "<br/>VAL: $result[$key]";

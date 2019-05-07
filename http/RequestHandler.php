@@ -21,7 +21,7 @@ abstract class RequestHandler
 
     public function run()
     {
-        // Request formatlari
+// Request formatlari
 // {dosya_adı}/{fonksiyon_adı}
 // {dosya_adı}/{fonksiyon_adı}/{id}
 
