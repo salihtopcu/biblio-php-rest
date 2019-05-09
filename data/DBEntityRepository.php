@@ -117,7 +117,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
             $revertedMap = $this->revertColumnNameMap();
             foreach ($properties as $property) {
                 if (!is_null($property) && $property != "") {
-                    $phrase .= \StringMethod::contains($sql, "ORDER BY") ?
+                    $phrase .= \StringMethod::contains($phrase, "ORDER BY") ?
                         ", " : " ORDER BY ";
                     $phrase .= $revertedMap[$property] . " ";
                 }

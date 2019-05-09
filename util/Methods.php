@@ -194,7 +194,7 @@ abstract class StringMethod
 
     public static function contains($text, $search)
     {
-        return substr_count($text, $search) > 0;
+        return strpos($text, $search) !== false;
     }
 
     public static function isEmail($text)
