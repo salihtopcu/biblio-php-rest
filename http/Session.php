@@ -17,7 +17,12 @@ require_once ROOT_PATH . '/http/Request.php';
 require_once ROOT_PATH . '/model/Entity.php';
 require_once ROOT_PATH . '/util/Language.php';
 
-abstract class Session
+interface ISession
+{
+    public static function getInstance();
+}
+
+abstract class Session implements ISession
 {
 
     /** @var array */
@@ -42,7 +47,7 @@ abstract class Session
      * @param RequestHandler  $requestHandler
      * @param ResponseBuilder $responseBuilder
      */
-    public function __construct($languagesPath, RequestHandler $requestHandler, ResponseBuilder $responseBuilder)
+    protected final function __construct($languagesPath, RequestHandler $requestHandler, ResponseBuilder $responseBuilder)
     {
         $this->languagesPath = $languagesPath;
         $this->requestHandler = $requestHandler;
@@ -52,6 +57,16 @@ abstract class Session
 //        echo dirname(__FILE__) . '<br/>';
 //        echo dirname(dirname(__FILE__)) . '<br/>';
 //        echo $biblioPath . '<br/>';
+    }
+
+    // dışarıdan kopyalanmasını engelledik
+    private function __clone()
+    {
+    }
+
+    // unserialize() metodu ile tekrardan oluşturulmasını engelledik
+    private function __wakeup()
+    {
     }
 
     public function build()
@@ -91,13 +106,9 @@ abstract class Session
         }
     }
 
-//    public static function getInstance()
-//    {
-//        return self::$instance;
-//    }
-
     public static function getWord($key)
     {
-        return !is_null(self::$instance) && isset(self::$instance->word[$key]) ? self::$instance->word[$key] : $key;
+//        return !is_null(self::$instance) && isset(self::$instance->word[$key]) ? self::$instance->word[$key] : $key;
+        return isset(self::getInstance()->word[$key]) ? self::getInstance()->word[$key] : $key;
     }
 }
