@@ -33,7 +33,7 @@ abstract class RequestHandler
         if (Request::getMethod() == RequestMethod::Options) {
             header('Cross-Origin-Resource-Sharing: true');
             header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
-            header('Access-Control-Allow-Headers: access-token,content-type');
+            header('Access-Control-Allow-Headers: authorization,content-type');
             header("HTTP/1.1 200");
             exit;
         }

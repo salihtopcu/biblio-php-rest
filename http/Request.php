@@ -37,26 +37,12 @@ abstract class Request
     public static function getHeaders()
     {
         if (is_null(Request::$headers)) {
-            if (apache_get_version() !== false) {
-                Request::$headers = apache_request_headers();
-            } else {
-                Request::$headers = array();
-                $rx_http = '/\AHTTP_/';
-                foreach ($_SERVER as $key => $val) {
-                    if (preg_match($rx_http, $key)) {
-                        $arh_key = preg_replace($rx_http, '', $key);
-                        $rx_matches = explode('_', $arh_key);
-                        if (count($rx_matches) > 0 and strlen($arh_key) > 2) {
-                            foreach ($rx_matches as $ak_key => $ak_val)
-                                $rx_matches [$ak_key] = ucfirst($ak_val);
-                            $arh_key = implode('-', $rx_matches);
-                        }
-                        Request::$headers [strtolower($arh_key)] = $val;
-                    }
+            Request::$headers = array();
+            foreach ($_SERVER as $key => $value) {
+                if(strpos($key, 'REDIRECT_') === false) {
+                    Request::$headers[strtolower(str_replace("_", "-", str_replace("HTTP_", "", $key)))] = $value;
                 }
             }
-            foreach (Request::$headers as $key => $value)
-                Request::$headers[strtolower($key)] = $value;
         }
         return Request::$headers;
     }

@@ -36,6 +36,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
 {
     public $hasIdColumn = true;
     protected $convertBoolToInt = false;
+    protected $dateTimeFormat = "Y-m-d H:i:s";
 
     private $revertedColumnNameMap;
 
@@ -146,7 +147,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
                         $sqlValues .= empty($sqlValues) ? "" : ", ";
                         $sqlValues .= is_string($value) || $isDate ? "'" : "";
                         if ($isDate)
-                            $sqlValues .= date_format($value, DATE_TIME_FORMAT);
+                            $sqlValues .= date_format($value, $this->dateTimeFormat);
                         else if (is_null($value))
                             $sqlValues .= 'NULL';
                         else if (is_bool($value) && $this->convertBoolToInt)
@@ -183,7 +184,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
                         $setPhrase .= "$columnName = ";
                         $setPhrase .= is_string($value) || $isDate ? "'" : "";
                         if ($isDate)
-                            $setPhrase .= date_format($value, DATE_TIME_FORMAT);
+                            $setPhrase .= date_format($value, $this->dateTimeFormat);
                         else if (is_null($value))
                             $setPhrase .= 'NULL';
                         else if (is_bool($value) && $this->convertBoolToInt)
