@@ -78,6 +78,7 @@ class MysqliDatabaseEnvoy implements IDatabaseEnvoy
     // for INSERT, UPDATE and DELETE
     private function runSql($sql)
     {
+//        echo "<br/>$sql<br/>";
         return mysqli_query($this->getDbConnection(), $sql) === true;
     }
 
@@ -131,7 +132,7 @@ class MysqliDatabaseEnvoy implements IDatabaseEnvoy
 
     public function getErrorMessage()
     {
-        return empty($this->hasError()) ? $this->getDbConnection()->error : null;
+        return $this->hasError() ? $this->getDbConnection()->error : null;
     }
 
     public function getLastInsertId()

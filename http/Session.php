@@ -22,7 +22,7 @@ interface ISession
     public static function getInstance();
 }
 
-abstract class Session implements ISession
+abstract class Session
 {
 
     /** @var array */
@@ -52,19 +52,16 @@ abstract class Session implements ISession
         $this->languagesPath = $languagesPath;
         $this->requestHandler = $requestHandler;
         $this->responseBuilder = $responseBuilder;
-
-//        echo getcwd() . '<br/>';
-//        echo dirname(__FILE__) . '<br/>';
-//        echo dirname(dirname(__FILE__)) . '<br/>';
-//        echo $biblioPath . '<br/>';
     }
 
-    // dışarıdan kopyalanmasını engelledik
+    abstract public static function getInstance();
+
+    // Blocked creating new instance with clone
     private function __clone()
     {
     }
 
-    // unserialize() metodu ile tekrardan oluşturulmasını engelledik
+    // Blocked creating new instance with unserialize() method
     private function __wakeup()
     {
     }
@@ -101,14 +98,13 @@ abstract class Session implements ISession
             if (empty($this->currentLanguage))
                 $this->currentLanguage = Language::english;
             include_once $this->languagesPath . '/' . $this->currentLanguage . '.php';
-            if (isset($word))
-                $this->word = $word;
+            $this->word = isset($word) ? $word : [];
         }
     }
 
     public static function getWord($key)
     {
 //        return !is_null(self::$instance) && isset(self::$instance->word[$key]) ? self::$instance->word[$key] : $key;
-        return isset(self::getInstance()->word[$key]) ? self::getInstance()->word[$key] : $key;
+        return isset(get_called_class()::getInstance()->word[$key]) ? self::getInstance()->word[$key] : $key;
     }
 }

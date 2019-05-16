@@ -32,8 +32,8 @@ abstract class RequestHandler
 
         if (Request::getMethod() == RequestMethod::Options) {
             header('Cross-Origin-Resource-Sharing: true');
-            header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE');
-            header('Access-Control-Allow-Headers: authorization,content-type');
+            header('Access-Control-Allow-Methods: ' . \ArrayMethod::mergeArrayAsString($this->getAllowedRequestMethods()));
+            header('Access-Control-Allow-Headers: ' . \ArrayMethod::mergeArrayAsString($this->getAllowedHeaders()));
             header("HTTP/1.1 200");
             exit;
         }
@@ -53,8 +53,6 @@ abstract class RequestHandler
                 if (file_exists($filePath)) {
                     require_once("$filePath");
                     $module = new $moduleName ();
-//                    echo 'ModuleName: ' . $moduleName;
-//                    if (is_subclass_of($module, ApiModule::class) && method_exists($module, $func)) {
                     if (method_exists($module, $func)) {
                         if (is_null($param))
                             $module->$func ();
@@ -80,5 +78,27 @@ abstract class RequestHandler
         }
     }
 
+
+    /**
+     * Requires for CORS handshake with Web Clients
+     *
+     * @return array
+     */
+    protected function getAllowedHeaders(): array
+    {
+        return ["content-type", "authorization"];
+    }
+
+    /**
+     * Requires for CORS handshake with Web Clients
+     *
+     * @return array
+     */
+    protected function getAllowedRequestMethods(): array
+    {
+        return [RequestMethod::Get, RequestMethod::Post, RequestMethod::Put, RequestMethod::Delete];
+    }
+
     abstract protected function checkForDatabaseUpdate();
+
 }

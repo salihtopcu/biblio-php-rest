@@ -73,12 +73,17 @@ abstract class DateMethod
         if (strlen($dateString) == 10)
             $dateString .= " 00:00:00";
         $format = self::generateFormat($dateString);
-//        return empty($format) ? null : date_create_from_format($format, $dateString);
         if (empty($format))
             return null;
         else {
             $date = date_create_from_format($format, $dateString);
-            return $date === false ? null : $date;
+            if ($date !== false) {
+                if (self::getYearValue($date) > 1)
+                    return $date;
+                else
+                    return DateTime::createFromFormat(DATE_ISO8601, "1900-01-01T00:00:00+0000");
+            } else
+                return null;
         }
     }
 

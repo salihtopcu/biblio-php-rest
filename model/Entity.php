@@ -45,7 +45,8 @@ abstract class Entity implements iEntity
                 else if (is_bool($value))
                     $instance->$property = (bool) $newValue;
                 else {
-                    $instance->$property = \DateMethod::create($newValue);
+                    if (!is_null($newValue))
+                        $instance->$property = \DateMethod::create($newValue);
                     if (is_null($instance->$property))
                         $instance->$property = $newValue;
                 }
