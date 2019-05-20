@@ -1,0 +1,7 @@
+{
+    "name": "salihtopcu/Biblio",
+    "description": "Biblio PHP-Rest is a basic substructure for PHP Rest services.",
+    "require": {
+        "php": "^7.1"
+    }
+}
