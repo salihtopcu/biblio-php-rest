@@ -91,7 +91,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
                     $isDate = is_object($value) && get_class($value) == "DateTime";
                     $isLike = is_string($value) && !empty($value) && (substr($value, 0, 1) == '%' || substr($value, -1) == '%');
                     $phrase .= \StringMethod::contains($phrase, "WHERE") ? "AND " : "WHERE ";
-                    $phrase .= $revertedMap[$property];
+                    $phrase .= $property == "id" ? "id" : $revertedMap[$property];
                     $phrase .= $isLike ? " LIKE " : " = ";
                     $phrase .= is_string($value) || $isDate ? "'" : "";
                     if ($this->convertBoolToInt && is_bool($value))
