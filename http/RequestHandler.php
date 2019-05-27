@@ -8,7 +8,7 @@
 
 namespace Biblio\http;
 
-require_once 'util/Methods.php';
+require_once ROOT_PATH . '/util/Methods.php';
 
 abstract class RequestHandler
 {
