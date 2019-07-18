@@ -60,7 +60,7 @@ abstract class Session
     {
     }
 
-    public function getInstance(): Session
+    public static function getInstance(): Session
     {
         return Session::$instance;
     }
@@ -106,6 +106,6 @@ abstract class Session
 //        echo $key . ' ' . count(Session::getInstance()->word);exit;
 //        echo is_null(Session::getInstance()->word) ? 'null' : 'degil';exit;
 //        return !is_null(self::$instance) && isset(self::$instance->word[$key]) ? self::$instance->word[$key] : $key;
-        return isset(get_called_class()::getInstance()->word[$key]) ? self::getInstance()->word[$key] : $key;
+        return isset(Session::$instance->word[$key]) ? Session::$instance->word[$key] : $key;
     }
 }
