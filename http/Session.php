@@ -17,11 +17,6 @@ require_once ROOT_PATH . '/http/Request.php';
 require_once ROOT_PATH . '/model/Entity.php';
 require_once ROOT_PATH . '/util/Language.php';
 
-interface ISession
-{
-    public static function getInstance();
-}
-
 abstract class Session
 {
 
@@ -52,9 +47,8 @@ abstract class Session
         $this->languagesPath = $languagesPath;
         $this->requestHandler = $requestHandler;
         $this->responseBuilder = $responseBuilder;
+        Session::$instance = $this;
     }
-
-    abstract public static function getInstance();
 
     // Blocked creating new instance with clone
     private function __clone()
@@ -64,6 +58,11 @@ abstract class Session
     // Blocked creating new instance with unserialize() method
     private function __wakeup()
     {
+    }
+
+    public function getInstance(): Session
+    {
+        return Session::$instance;
     }
 
     public function build()
@@ -104,6 +103,8 @@ abstract class Session
 
     public static function getWord($key)
     {
+//        echo $key . ' ' . count(Session::getInstance()->word);exit;
+//        echo is_null(Session::getInstance()->word) ? 'null' : 'degil';exit;
 //        return !is_null(self::$instance) && isset(self::$instance->word[$key]) ? self::$instance->word[$key] : $key;
         return isset(get_called_class()::getInstance()->word[$key]) ? self::getInstance()->word[$key] : $key;
     }
