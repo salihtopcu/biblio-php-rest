@@ -37,6 +37,7 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
     public $hasIdColumn = true;
     protected $convertBoolToInt = false;
     protected $dateTimeFormat = "Y-m-d H:i:s";
+//    protected $dateTimeFormat = DATE_ISO8601;
 
     private $revertedColumnNameMap;
 
@@ -69,11 +70,20 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
         foreach ($this->getColumnNameMap() as $columnName => $propertyName) {
             if ($propertyName != "id") {
                 $columnNames .= empty($columnNames) ? "" : ", ";
-                $columnNames .= $this->getTableName() . ".$columnName AS $propertyName";
+                $columnNames .= $this->getColumnNameForSelectPhrase($propertyName);
             }
         }
         $selectPhrase .= $columnNames . " FROM " . $this->getTableName() . " ";
         return $selectPhrase;
+    }
+
+    /**
+     * @param $propertyName
+     *
+     * @return string
+     */
+    protected function getColumnNameForSelectPhrase($propertyName) {
+        return $this->getTableName() . "." . $this->revertColumnNameMap()[$propertyName] . " AS $propertyName";
     }
 
     /**
