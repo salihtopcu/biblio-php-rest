@@ -61,14 +61,15 @@ abstract class Entity implements iEntity
                 } else {
                     if (is_object($value) && get_class($value) == "Collection") {
                         if (!class_exists($subClass) && substr($subClass, -1) == "s") {
-                            if (substr($subClass, -3) == "ies")
-                                $subClass = substr($subClass, 0, -3) . "y";
-                            else if (substr($subClass, -2) == "es")
-                                $subClass = substr($subClass, 0, -2);
-                            else if (substr($subClass, -1) == "s")
-                                $subClass = substr($subClass, 0, -1);
-                            if (!class_exists($subClass))
-                                $subClass = $class . $subClass;
+                            $newSubClass = $subClass;
+                            if (substr($subClass, -1) == "s")
+                                $newSubClass = substr($subClass, 0, -1);
+                            if (!class_exists($newSubClass) && substr($subClass, -2) == "es")
+                                $newSubClass = substr($subClass, 0, -2);
+                            if (!class_exists($newSubClass) && substr($subClass, -3) == "ies")
+                                $newSubClass = substr($subClass, 0, -3) . "y";
+                            if (class_exists($newSubClass))
+                                $subClass = $newSubClass;
                         }
                         if (class_exists($subClass) && method_exists($subClass, "constructFromData")) {
                             foreach ($newValue as $item)
@@ -131,7 +132,7 @@ class Collection extends \ArrayObject
 {
     public static function constructFromData(array $data, $className)
     {
-        $collection = new \Collection();
+        $collection = new Collection();
         foreach ($data as $item) {
             if (class_exists($className) && \ArrayMethod::isAssociative($item)) {
                 $collection->append($className::constructFromData($item));
