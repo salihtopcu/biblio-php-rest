@@ -25,11 +25,11 @@ abstract class Entity implements iEntity
     public static $dateTimeFormat = DATE_ISO8601;
 
     /**
+     * Constructs an Entity by array. You can use this method to parse JSON data to an Entity.
+     *
      * @param array $data
      *
      * @return mixed
-     *
-     * Önce gelen data'nın içeriği data, daha sonra Object'in yapısı dikkate alınarak parse işlemi yapılır.
      */
     public static function constructFromData(array $data)
     {
@@ -51,31 +51,23 @@ abstract class Entity implements iEntity
                         $instance->$property = $newValue;
                 }
             } else {
-                $subClass = ucfirst($property);
                 if (\ArrayMethod::isAssociative($newValue)) {
+                    $subClass = self::generateEntityClassName($property);
                     if (class_exists($subClass) && method_exists($subClass, "constructFromData"))
                         $instance->$property = $subClass::constructFromData($newValue);
                     else {
                         $instance->$property = json_decode(json_encode($newValue));
                     }
                 } else {
-                    if (is_object($value) && get_class($value) == "Collection") {
-                        if (!class_exists($subClass) && substr($subClass, -1) == "s") {
-                            $newSubClass = $subClass;
-                            if (substr($subClass, -1) == "s")
-                                $newSubClass = substr($subClass, 0, -1);
-                            if (!class_exists($newSubClass) && substr($subClass, -2) == "es")
-                                $newSubClass = substr($subClass, 0, -2);
-                            if (!class_exists($newSubClass) && substr($subClass, -3) == "ies")
-                                $newSubClass = substr($subClass, 0, -3) . "y";
-                            if (class_exists($newSubClass))
-                                $subClass = $newSubClass;
-                        }
-                        if (class_exists($subClass) && method_exists($subClass, "constructFromData")) {
+                    $subClass = self::generateCollectionItemClassName($property);
+                    if (!is_null($subClass)) {
+//                        if (!is_a($value, Collection::class) && !is_subclass_of($value, Collection::class))
+                        if (is_null($value))
+                            $instance->$property = new Collection();
+                        if (!is_null($value)) {
                             foreach ($newValue as $item)
-                                $instance->$property->append($subClass::constructFromData($item));
-                        } else
-                            $instance->$property = $newValue;
+                                $instance->$property->append($subClass::constructFromData((array) $item));
+                        }
                     } else
                         $instance->$property = $newValue;
                 }
@@ -84,6 +76,29 @@ abstract class Entity implements iEntity
         return $instance;
     }
 
+    private static function generateEntityClassName($propertyName) {
+        $subClass = ucfirst($property);
+        return class_exists($subClass) && method_exists($subClass, "constructFromData") ? $subClass : null;
+    }
+
+    private static function generateCollectionItemClassName($collectionName) {
+        $subClass = ucfirst($collectionName);
+        if (substr($subClass, -1) == "s")
+            $newSubClass = substr($subClass, 0, -1);
+        if (!class_exists($newSubClass) && substr($subClass, -2) == "es")
+            $newSubClass = substr($subClass, 0, -2);
+        if (!class_exists($newSubClass) && substr($subClass, -3) == "ies")
+            $newSubClass = substr($subClass, 0, -3) . "y";
+        return class_exists($newSubClass) && method_exists($newSubClass, "constructFromData") ? $newSubClass : null;
+    }
+
+    /**
+     * Converts Entity to array. You can use this method to send your Entity as response data.
+     *
+     * @param null $maxChildCount
+     *
+     * @return array|null
+     */
     public function dto($maxChildCount = null)
     {
 //        echo "<br/>COUNTER: $maxChildCount";
@@ -122,6 +137,13 @@ abstract class Entity implements iEntity
             return null;
     }
 
+    /**
+     * You can override this method to customize your Entities in Collections
+     *
+     * @param null $maxChildCount
+     *
+     * @return array|null
+     */
     public function listingDto($maxChildCount = null)
     {
         return $this->dto($maxChildCount);
@@ -130,6 +152,13 @@ abstract class Entity implements iEntity
 
 class Collection extends \ArrayObject
 {
+    /**
+     * Constructs a Collection by array. You can use this method to parse JSON data to a Collection.
+     *
+     * @param array $data
+     *
+     * @return mixed
+     */
     public static function constructFromData(array $data, $className)
     {
         $collection = new Collection();
@@ -142,9 +171,11 @@ class Collection extends \ArrayObject
     }
 
     /**
-     * @param int|null $maxChildCount
+     * Converts Collection to array. You can use this method to send your Collection as response data.
      *
-     * @return array
+     * @param null $maxChildCount
+     *
+     * @return array|null
      */
     public function dto($maxChildCount = null)
     {
