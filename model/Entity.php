@@ -64,10 +64,8 @@ abstract class Entity implements iEntity
 //                        if (!is_a($value, Collection::class) && !is_subclass_of($value, Collection::class))
                         if (is_null($value))
                             $instance->$property = new Collection();
-                        if (!is_null($value)) {
-                            foreach ($newValue as $item)
-                                $instance->$property->append($subClass::constructFromData((array) $item));
-                        }
+                        foreach ($newValue as $item)
+                            $instance->$property->append($subClass::constructFromData((array) $item));
                     } else
                         $instance->$property = $newValue;
                 }
@@ -76,12 +74,14 @@ abstract class Entity implements iEntity
         return $instance;
     }
 
-    private static function generateEntityClassName($propertyName) {
+    private static function generateEntityClassName($propertyName)
+    {
         $subClass = ucfirst($property);
         return class_exists($subClass) && method_exists($subClass, "constructFromData") ? $subClass : null;
     }
 
-    private static function generateCollectionItemClassName($collectionName) {
+    private static function generateCollectionItemClassName($collectionName)
+    {
         $subClass = ucfirst($collectionName);
         if (substr($subClass, -1) == "s")
             $newSubClass = substr($subClass, 0, -1);
