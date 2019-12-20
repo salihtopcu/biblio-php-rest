@@ -76,7 +76,7 @@ abstract class Entity implements iEntity
 
     private static function generateEntityClassName($propertyName)
     {
-        $subClass = ucfirst($property);
+        $subClass = ucfirst($propertyName);
         return class_exists($subClass) && method_exists($subClass, "constructFromData") ? $subClass : null;
     }
 
