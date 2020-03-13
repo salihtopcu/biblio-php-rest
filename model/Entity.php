@@ -83,6 +83,7 @@ abstract class Entity implements iEntity
     private static function generateCollectionItemClassName($collectionName)
     {
         $subClass = ucfirst($collectionName);
+        $newSubClass = "";
         if (substr($subClass, -1) == "s")
             $newSubClass = substr($subClass, 0, -1);
         if (!class_exists($newSubClass) && substr($subClass, -2) == "es")
