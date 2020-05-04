@@ -1,6 +1,16 @@
 {
-    "name": "salihtopcu/Biblio",
+    "name": "salihtopcu/biblio-php-rest",
+    "type": "library",
     "description": "Biblio PHP-Rest is a basic substructure for PHP Rest services.",
+    "keywords": ["biblio", "rest", "simple"],
+    "homepage": "https://github.com/salihtopcu/biblio-php-rest",
+    "license": "",
+    "authors": [{
+        "name": "Salih Topcu",
+        "email": "saihtopcu@hotmail.com",
+        "homepage": "https://github.com/salihtopcu/",
+        "role": "Developer"
+    }],
     "require": {
         "php": "^7.1"
     }
