@@ -49,6 +49,15 @@ interface IDatabaseEnvoy
     public function runDeleteSql($sql);
 
     /**
+     * Escapes special characters in a string for use in an SQL statement
+     * 
+     * @param string $string
+     *
+     * @return string
+     */
+    public function escapeString($string);
+
+    /**
      * @param string        $sql
      * @param Entity::class $modelClass
      *

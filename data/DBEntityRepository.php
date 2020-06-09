@@ -162,6 +162,8 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
                             $sqlValues .= 'NULL';
                         else if (is_bool($value) && $this->convertBoolToInt)
                             $sqlValues .= (int) $value;
+                        else if (is_string($value))
+                            $sqlValues .= $this->getDbEnvoy()->escapeString($value);
                         else
                             $sqlValues .= $value;
                         $sqlValues .= is_string($value) || $isDate ? "'" : "";
