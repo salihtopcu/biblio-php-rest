@@ -86,23 +86,31 @@ abstract class DateMethod
         return date_format($date, $format);
     }
 
-    public static function generateFormat($dateString)
+    private static function generateFormat($dateString)
     {
         $l = strlen($dateString);
-        if ($l == 10 || $l == 19 || $l == 23) {
+        if ($l == 10 || ($l >= 19 && $l <= 25)) {
             $ds = $l >= 10 ? $dateString[4] : null; // date separator
+            $ds2 = $l >= 10 ? $dateString[7] : null; // date separator 2
+            if (is_null($ds) || $ds != $ds2 || !in_array($ds, ["-", ".", "/"])) return null;
+
+            $dts = $l >= 19 ? $dateString[10] : null; // date - time splitter
+            if (!is_null($dts) && !in_array($dts, ["T", " "])) return null;
+            if ($dts == "T") $dts = "\T";
+
             $ts = $l >= 19 ? $dateString[13] : null; // time separator
-            $ts2 = $l == 23 ? $dateString[19] : null; // time separator 2
-            $format = "";
-            if ($l >= 10)
-                $format = "Y" . $ds . "m" . $ds . "d";
-            if ($l >= 19)
-                $format = $format . " " . "H" . $ts . "i" . $ts . "s";
-            if ($l == 23)
-                $format = $format . $ts2 . "P";
+            $ts2 = $l >= 19 ? $dateString[16] : null; // time separator 2
+            if (!is_null($ts) && ($ts != $ts2 || $ts != ":")) return null;
+
+            $tz = $l > 19 ? "P" : null; // time zone phrase
+
+            $format = "Y" . $ds . "m" . $ds . "d";
+            if (!is_null($dts)) $format .= $dts;
+            if (!is_null($ts)) $format .= "H" . $ts . "i" . $ts . "s";
+            if (!is_null($tz)) $format .= $tz;
             return $format;
-        } else
-            return null;
+        }
+        return null;
     }
 
     public static function getDayValue(DateTime $date)

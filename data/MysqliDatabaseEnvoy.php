@@ -54,6 +54,11 @@ class MysqliDatabaseEnvoy implements IDatabaseEnvoy
     {
         return $this->runSql($sql);
     }
+    
+    public function escapeString($string)
+    {
+        return mysqli_real_escape_string($this->getDbConnection(), $string);
+    }
 
     protected function getDbConnection()
     {
