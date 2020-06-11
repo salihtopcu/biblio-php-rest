@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 12.02.2019
- * Time: 23:44
- */
 
 namespace Biblio\http;
 
@@ -21,9 +15,9 @@ abstract class RequestHandler
 
     public function run()
     {
-// Request formatlari
-// {dosya_adı}/{fonksiyon_adı}
-// {dosya_adı}/{fonksiyon_adı}/{id}
+        // Request formatlari
+        // {dosya_adı}/{fonksiyon_adı}
+        // {dosya_adı}/{fonksiyon_adı}/{id}
 
         require_once 'Request.php';
 
@@ -39,12 +33,12 @@ abstract class RequestHandler
         }
 
         $success = true;
-        $commandArray = explode('/', strtolower(trim($_REQUEST ['rquest'])));
+        $commandArray = explode('/', strtolower(trim($_REQUEST['rquest'])));
         if (count($commandArray) > 0) {
             if (count($commandArray) > 1) {
-                $moduleName = ucfirst($commandArray [0]);
+                $moduleName = ucfirst($commandArray[0]);
                 $phpFileName = $moduleName . ".php";
-                $func = $commandArray [1];
+                $func = $commandArray[1];
                 $param = null;
                 if (count($commandArray) > 2)
                     $param = $commandArray[2];
@@ -52,18 +46,18 @@ abstract class RequestHandler
                 $filePath = $this->apiFolderPath . $phpFileName;
                 if (file_exists($filePath)) {
                     require_once("$filePath");
-                    $module = new $moduleName ();
+                    $module = new $moduleName();
                     if (method_exists($module, $func)) {
                         if (is_null($param))
-                            $module->$func ();
+                            $module->$func();
                         else
-                            $module->$func ($param);
+                            $module->$func($param);
                     } else
                         $success = false;
                 } else
                     $success = false;
             } else if (count($commandArray) == 1) {
-                $command = $commandArray [0];
+                $command = $commandArray[0];
                 if (strtolower($command) == "updatedatabase") {
                     self::checkForDatabaseUpdate();
                 }
@@ -100,5 +94,4 @@ abstract class RequestHandler
     }
 
     abstract protected function checkForDatabaseUpdate();
-
 }

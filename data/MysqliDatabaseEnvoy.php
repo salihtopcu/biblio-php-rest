@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 13.02.2019
- * Time: 00:39
- */
 
 namespace Biblio\data;
 
@@ -23,7 +17,7 @@ class MysqliDatabaseEnvoy implements IDatabaseEnvoy
      * @var string
      */
     private $charset;
-    
+
     /**
      * @var \mysqli
      */
@@ -147,5 +141,4 @@ class MysqliDatabaseEnvoy implements IDatabaseEnvoy
             self::$dbConnection->close();
         }
     }
-
 }

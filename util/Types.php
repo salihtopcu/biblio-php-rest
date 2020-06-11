@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 20.02.2019
- * Time: 23:42
- */
 
 namespace Biblio\util;
 

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 20.02.2019
- * Time: 22:04
- */
 
 abstract class ArrayMethod
 {
@@ -25,7 +19,7 @@ abstract class ArrayMethod
 
     public static function getValue($array, $key, $defaultValue = null)
     {
-        return array_key_exists($key, $array) ? $array [$key] : $defaultValue;
+        return array_key_exists($key, $array) ? $array[$key] : $defaultValue;
     }
 
     public static function revert(array $array)
@@ -152,7 +146,8 @@ abstract class Encryption
     }
 }
 
-abstract class MysqliMethod {
+abstract class MysqliMethod
+{
 
     public static function createMySqliConnection($url, $user, $password, $dbName, $port = "3306", $dbConnectionTimeout = 10, $charset = "utf8")
     {

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 28.04.2019
- * Time: 17:39
- */
 
 namespace Biblio\data;
 
@@ -82,7 +76,8 @@ abstract class DBEntityRepository extends Repository implements IDBEntityReposit
      *
      * @return string
      */
-    protected function getColumnNameForSelectPhrase($propertyName) {
+    protected function getColumnNameForSelectPhrase($propertyName)
+    {
         return $this->getTableName() . "." . $this->revertColumnNameMap()[$propertyName] . " AS $propertyName";
     }
 

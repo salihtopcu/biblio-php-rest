@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 12.02.2019
- * Time: 23:46
- */
 
 namespace Biblio\http;
 
@@ -39,7 +33,7 @@ abstract class Request
         if (is_null(Request::$headers)) {
             Request::$headers = array();
             foreach ($_SERVER as $key => $value) {
-                if(strpos($key, 'REDIRECT_') === false) {
+                if (strpos($key, 'REDIRECT_') === false) {
                     Request::$headers[strtolower(str_replace("_", "-", str_replace("HTTP_", "", $key)))] = $value;
                 }
             }

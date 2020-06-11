@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 13.04.2019
- * Time: 11:49
- */
 
 namespace Biblio\data;
 
@@ -98,5 +92,4 @@ interface IDatabaseEnvoy
      * @return void
      */
     public function disconnect();
-
 }

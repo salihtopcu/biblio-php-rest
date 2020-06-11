@@ -1,0 +1,31 @@
+{
+  "folders": [
+    {
+      "path": "../biblio-php-rest"
+    }
+  ],
+  "settings": {
+    "workbench.colorCustomizations": {
+			"activityBar.activeBackground": "#19488d",
+			"activityBar.activeBorder": "#dd4181",
+			"activityBar.background": "#19488d",
+			"activityBar.foreground": "#e7e7e7",
+			"activityBar.inactiveForeground": "#e7e7e799",
+			"activityBarBadge.background": "#dd4181",
+			"activityBarBadge.foreground": "#e7e7e7",
+			"statusBar.background": "#113262",
+			"statusBar.border": "#113262",
+			"statusBar.foreground": "#e7e7e7",
+			"statusBarItem.hoverBackground": "#19488d",
+			"titleBar.activeBackground": "#113262",
+			"titleBar.activeForeground": "#e7e7e7",
+			"titleBar.border": "#113262",
+			"titleBar.inactiveBackground": "#11326299",
+			"titleBar.inactiveForeground": "#e7e7e799"
+		},
+    "peacock.color": "#113262"
+  },
+  "extensions": {
+    "recommendations": ["bmewburn.vscode-intelephense-client"]
+  }
+}

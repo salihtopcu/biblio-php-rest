@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sLh
- * Date: 28.04.2019
- * Time: 17:32
- */
 
 namespace Biblio\model;
 
@@ -21,5 +15,4 @@ class DBEntity extends Entity
         } else
             return null;
     }
-
 }
